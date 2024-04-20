@@ -25,6 +25,11 @@ pip install -r requirements.txt
 python3 VGG16.py [--batch_size=64] [--learning_rate=1e-4] [--num_epochs=20] [--dataset_dir='dataset/Garbage classification'] [--model_save_path='vgg16.pth'] [--no-cuda]
 ```
 
+### SVM (Support Vector Machine)
+```bash
+python3 SVM.py [--dataset_dir='dataset/Garbage classification'] [--model_save_path='svm.pkl']
+```
+
 ## Windows 10/11 CUDA Support Installation
 Guide: https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html
 
