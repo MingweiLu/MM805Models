@@ -5,6 +5,7 @@ import time
 import torch
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data import random_split
+import torchvision.models as models
 from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
 import torch.nn as nn
@@ -15,8 +16,8 @@ IMAGE_CLASS_NAMES = ['metal', 'glass', 'paper', 'trash', 'cardboard', 'plastic']
 def parse_args():
     parser = argparse.ArgumentParser(description='Train VGG16 on Garbage classification dataset')
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
-    parser.add_argument('--learning_rate', type=float, default=1e-2, help='Learning rate (initial)')
-    parser.add_argument('--num_epochs', type=int, default=20, help='Number of epochs')
+    parser.add_argument('--learning_rate', type=float, default=1e-4, help='Learning rate (initial)')
+    parser.add_argument('--num_epochs', type=int, default=15, help='Number of epochs')
     parser.add_argument('--dataset_dir', type=str, default='dataset/Garbage classification', help='Dataset directory')
     parser.add_argument('--model_save_path', type=str, default='vgg16.pth', help='Path to save the model')
     parser.add_argument('--no-cuda', action='store_true', help='Disable CUDA')
@@ -42,49 +43,11 @@ def load_data(dataset_dir: str, batch_size: int) -> tuple[DataLoader, DataLoader
 class VGG16(nn.Module):
     def __init__(self, num_classes: int):
         super(VGG16, self).__init__()
-        self.features = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, 64, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(128, 128, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(128, 256, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(256, 256, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(256, 256, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(256, 512, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(512, 512, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(512, 512, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(512, 512, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(512, 512, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(512, 512, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2)
-        )
-        self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
-        self.classifier = nn.Sequential(
-            nn.Linear(512 * 7 * 7, 4096),
-            nn.ReLU(inplace=True),
-            nn.Dropout(),
-            nn.Linear(4096, 4096),
-            nn.ReLU(inplace=True),
-            nn.Dropout(),
-            nn.Linear(4096, num_classes)
-        )
+        network = models.vgg16(weights='DEFAULT')   # load the pre-trained VGG model
+        self.features = network.features
+        self.avgpool = network.avgpool
+        self.classifier = network.classifier
+        self.classifier[6] = nn.Linear(4096, num_classes)   # replace the last layer
 
     def forward(self, x):
         x = self.features(x)
@@ -100,7 +63,7 @@ class VGG16(nn.Module):
         self.load_state_dict(torch.load(path))
 
 
-def train(model, data_loader, loss_fn, optimizer, device) -> float:
+def train(model: nn.Module, data_loader: DataLoader, loss_fn, optimizer: torch.optim.Optimizer, device) -> float:
     """Train the model for one epoch"""
     model.train()
     running_loss = 0.0
@@ -116,13 +79,13 @@ def train(model, data_loader, loss_fn, optimizer, device) -> float:
     return running_loss / len(data_loader)
 
 
-def validate(model, data_loader, loss_fn, device) -> tuple[float, float]:
+def validate(model: nn.Module, data_loader: DataLoader, loss_fn, device) -> tuple[float, float]:
     model.eval()
     running_loss = 0.0
     correct = 0
     total = 0
     with torch.no_grad():
-        for i, (images, labels) in enumerate(data_loader):
+        for _, (images, labels) in enumerate(data_loader):
             images, labels = images.to(device), labels.to(device)
             outputs = model(images)
             loss = loss_fn(outputs, labels)
@@ -143,9 +106,9 @@ def main():
     train_dl, val_dl, test_dl = load_data(args.dataset_dir, args.batch_size)
 
     model = VGG16(len(IMAGE_CLASS_NAMES)).to(device)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss().to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.num_epochs // 5, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.num_epochs // 3, gamma=0.5)
 
     # train the model
     train_losses = []
