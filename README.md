@@ -33,6 +33,15 @@ python3 SVM.py [--dataset_dir='dataset/Garbage classification'] [--model_save_pa
 ### Vit (Vision Transformer) Fine-tuning
 [`ViT.ipynb`](ViT.ipynb)
 
+### CLIP (Contrastive Language-Image Pretraining)
+[`FineTuneCLIP.ipynb`](FineTuneCLIP.ipynb)
+
+### MoonDream
+[`FineTuneMoonDream.ipynb`](FineTuneMoonDream.ipynb)
+
+### Resnet50
+[`Resnet50.ipynb`](Resnet50.ipynb)
+
 ## Windows 10/11 CUDA Support Installation
 Guide: https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html
 
