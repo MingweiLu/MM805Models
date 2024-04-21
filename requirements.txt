@@ -1,0 +1,9 @@
+# pip install -r requirements.txt
+
+pandas
+numpy
+matplotlib
+torch
+torchvision
+tqdm
+scikit-image
