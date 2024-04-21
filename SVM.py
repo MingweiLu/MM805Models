@@ -43,7 +43,7 @@ def train_svm(x_train: np.ndarray, y_train: np.ndarray) -> svm.SVC:
     ref: https://www.geeksforgeeks.org/image-classification-using-support-vector-machine-svm-in-python/
     """
     param_grid = {'C': [0.1, 1, 10], 'gamma': [0.0005, 0.001, 0.01], 'kernel': ['linear']}
-    model = GridSearchCV(svm.SVC(probability=True), param_grid)
+    model = GridSearchCV(svm.SVC(probability=True), param_grid, verbose=3, n_jobs=-1)
     model.fit(x_train, y_train)
     return model
 
