@@ -7,3 +7,6 @@ torch
 torchvision
 tqdm
 scikit-image
+transformers
+albumentations
+opencv-python
