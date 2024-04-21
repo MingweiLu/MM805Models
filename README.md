@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 ## Models
 
-### VGGNet16 (Very Deep Convolutional Networks)
+### VGGNet16 (Very Deep Convolutional Networks) Fine-tuning
 ```bash
 python3 VGG16.py [--batch_size=64] [--learning_rate=1e-4] [--num_epochs=15] [--dataset_dir='dataset/Garbage classification'] [--model_save_path='vgg16.pth'] [--no-cuda]
 ```
@@ -29,6 +29,9 @@ python3 VGG16.py [--batch_size=64] [--learning_rate=1e-4] [--num_epochs=15] [--d
 ```bash
 python3 SVM.py [--dataset_dir='dataset/Garbage classification'] [--model_save_path='svm.pkl']
 ```
+
+### Vit (Vision Transformer) Fine-tuning
+[`ViT.ipynb`](ViT.ipynb)
 
 ## Windows 10/11 CUDA Support Installation
 Guide: https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html
